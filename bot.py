@@ -30,7 +30,7 @@ async def on_ready():
     managed_roles.extend([roles[f'inż {group}'] for group in range(1, 7)])
     managed_roles.extend([roles[f'lic {group}'] for group in range(1, 7)])
 
-    df = pd.read_excel("/home/jagodek/wsb-bot/source.xlsx")
+    df = pd.read_excel("source.xlsx")
 
     for index, row in df.iterrows():
 
