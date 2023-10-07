@@ -14,7 +14,7 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 @bot.event
 async def on_ready():
     print('Bot is ready')
-    guild = bot.get_guild(1151837812354727976)
+    guild = bot.get_guild(int(os.environ.get('GUILD_ID')))
 
     log = open('error.log', 'w')
 
