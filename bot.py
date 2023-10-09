@@ -31,7 +31,7 @@ async def on_ready():
     managed_roles.extend([roles[f'lic {group}'] for group in range(1, 7)])
 
     df = pd.read_excel("source.xlsx")
-
+    verified_members = set()
     for index, row in df.iterrows():
 
         discord_id = row.iloc[-2]
@@ -54,11 +54,12 @@ async def on_ready():
             continue
 
         member = members[discord_id]
-
+        verified_members.add(member)
         roles_to_check = []
         roles_to_remove = []
 
         roles_to_check.append(roles["Verified"])
+        roles_to_remove.append(roles["Unverified"])
 
         if study_type == "Inżynierskich":
             roles_to_check.append(roles['Inżynier'])
@@ -79,6 +80,20 @@ async def on_ready():
         if len(roles_to_remove) > 0 or len(roles_to_add) > 0:
             print(f'{member.name}: added = {[role.name for role in roles_to_add]}, removed = {[role.name for role in roles_to_remove]}')
 
+
+    for member in members.values():
+        if member not in verified_members:
+            roles_to_remove = [role for role in managed_roles if role in member.roles]
+            print(f'{member.name}: ', end=' ')
+
+            if len(roles_to_remove) > 0:
+                await member.remove_roles(*roles_to_remove)
+                print(f'removed = {[role.name for role in roles_to_remove]}', end =' ')
+
+            if roles['Unverified'] not in member.roles:
+                await member.add_roles(roles['Unverified'])
+                print(f'added = {roles["Unverified"].name} ', end = ' ')
+            print()
     print("DONE")
 
 
