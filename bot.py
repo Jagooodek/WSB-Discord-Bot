@@ -11,9 +11,9 @@ intents = discord.Intents.default()
 intents.members = True
 bot = commands.Bot(command_prefix='!', intents=intents)
 
-@bot.event
-async def on_ready():
-    print('Bot is ready')
+
+async def verify():
+    print("START VERYFING")
     guild = bot.get_guild(int(os.environ.get('GUILD_ID')))
 
     log = open('error.log', 'w')
@@ -64,7 +64,7 @@ async def on_ready():
         roles_to_remove = []
 
         roles_to_check.append(roles["Verified"])
-        roles_to_remove.append(roles["Unverified"])
+
 
         if study_type == "Inżynierskich":
             roles_to_check.append(roles['Inżynier'])
@@ -74,7 +74,7 @@ async def on_ready():
             roles_to_check.append(roles['Licencjat'])
             roles_to_check.append(roles[f'lic {group}'])
 
-        roles_to_remove = [role for role in managed_roles if role not in roles_to_check and role in member.roles]
+        roles_to_remove = [role for role in [*managed_roles, roles['Unverified']] if role not in roles_to_check and role in member.roles]
         roles_to_add = [role for role in roles_to_check if role not in member.roles]
 
         if len(roles_to_add) > 0:
@@ -99,5 +99,13 @@ async def on_ready():
                 print(f'{member.name}: added = {roles["Unverified"].name} ')
     print("DONE")
 
+@bot.event
+async def on_ready():
+    print('Bot is ready')
+    await verify()
+
+@bot.event
+async def on_member_join(member):
+    await verify()
 
 bot.run(os.environ.get('DISCORD_API_KEY'))
