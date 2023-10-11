@@ -40,6 +40,11 @@ async def on_ready():
         group = row.iloc[-1]
         email = row.iloc[3]
 
+        while discord_id[-1].isspace():
+            discord_id = discord_id[:-1]
+        while discord_id[0].isspace():
+            discord_id = discord_id[1:]
+
         if not email.endswith('@student.wroclaw.merito.pl'):
             log.write(f'ERROR: wrong email, row = {index}, email = {email}\n')
             print(f'ERROR: wrong email = {email}')
@@ -84,16 +89,14 @@ async def on_ready():
     for member in members.values():
         if member not in verified_members:
             roles_to_remove = [role for role in managed_roles if role in member.roles]
-            print(f'{member.name}: ', end=' ')
 
             if len(roles_to_remove) > 0:
                 await member.remove_roles(*roles_to_remove)
-                print(f'removed = {[role.name for role in roles_to_remove]}', end =' ')
+                print(f'{member.name}: removed = {[role.name for role in roles_to_remove]}')
 
             if roles['Unverified'] not in member.roles:
                 await member.add_roles(roles['Unverified'])
-                print(f'added = {roles["Unverified"].name} ', end = ' ')
-            print()
+                print(f'{member.name}: added = {roles["Unverified"].name} ')
     print("DONE")
 
 
