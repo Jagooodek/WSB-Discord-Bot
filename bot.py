@@ -9,6 +9,7 @@ load_dotenv()
 
 intents = discord.Intents.default()
 intents.members = True
+intents.message_content = True
 bot = commands.Bot(command_prefix='!', intents=intents)
 
 
@@ -107,5 +108,9 @@ async def on_ready():
 @bot.event
 async def on_member_join(member):
     await verify()
+
+@bot.command(name="update_verified", description="This will update verified users")
+async def first_command(interaction, arg1: discord.Attachment):
+    print(arg2)
 
 bot.run(os.environ.get('DISCORD_API_KEY'))
