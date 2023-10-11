@@ -14,10 +14,10 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 
 
 async def verify():
-    print("START VERYFING")
     guild = bot.get_guild(int(os.environ.get('GUILD_ID')))
 
     log = open('error.log', 'w')
+    current_log = 'Verifing started.\n'
 
     members = {}
     for member in guild.members:
@@ -48,15 +48,15 @@ async def verify():
 
         if not email.endswith('@student.wroclaw.merito.pl'):
             log.write(f'ERROR: wrong email, row = {index}, email = {email}\n')
-            print(f'ERROR: wrong email = {email}')
+            current_log += f'ERROR: wrong email, row = {index}, email = {email}\n'
             continue
 
         if discord_id not in members:
             discord_id = discord_id.lower()
 
         if discord_id not in members:
-            print(f'ERROR: {discord_id} not found')
             log.write(f'ERROR: {discord_id} not found, row = {index}\n')
+            current_log += f'ERROR: {discord_id} not found, row = {index}\n'
             continue
 
         member = members[discord_id]
@@ -84,7 +84,7 @@ async def verify():
         if len(roles_to_remove) > 0:
             await member.remove_roles(*roles_to_remove)
         if len(roles_to_remove) > 0 or len(roles_to_add) > 0:
-            print(f'{member.name}: added = {[role.name for role in roles_to_add]}, removed = {[role.name for role in roles_to_remove]}')
+            current_log += f'{member.name}: added = {[role.name for role in roles_to_add]}, removed = {[role.name for role in roles_to_remove]}\n'
 
 
     for member in members.values():
@@ -93,24 +93,34 @@ async def verify():
 
             if len(roles_to_remove) > 0:
                 await member.remove_roles(*roles_to_remove)
-                print(f'{member.name}: removed = {[role.name for role in roles_to_remove]}')
+                current_log += f'{member.name}: removed = {[role.name for role in roles_to_remove]}\n'
 
             if roles['Unverified'] not in member.roles:
                 await member.add_roles(roles['Unverified'])
-                print(f'{member.name}: added = {roles["Unverified"].name} ')
-    print("DONE")
+                current_log += f'{member.name}: added = {roles["Unverified"].name}\n'
+    current_log += "Done."
+    return current_log
 
 @bot.event
 async def on_ready():
     print('Bot is ready')
-    await verify()
+    print(await verify())
 
 @bot.event
 async def on_member_join(member):
-    await verify()
+    print(await verify())
 
 @bot.command(name="update_verified", description="This will update verified users")
-async def first_command(interaction, arg1: discord.Attachment):
-    print(arg2)
+async def update_verified(interaction: discord.Interaction, arg1: discord.Attachment):
+    try:
+        admin_role = discord.utils.get(interaction.guild.roles, name='Admin')
+        if admin_role not in interaction.author.roles:
+            await interaction.reply("Musisz być Adminem mordeczko")
+            return
+        await interaction.reply("Working...")
+        await arg1.save(fp="source.xlsx")
+        await interaction.reply(await verify())
+    except Exception as e:
+        await interaction.reply(str(e))
 
 bot.run(os.environ.get('DISCORD_API_KEY'))
